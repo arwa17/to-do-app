@@ -1,70 +1,115 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React, { useState } from "react";
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  FlatList,
+  Modal,
+} from "react-native";
+import colors from "../../constants/Colors";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import tempData from "../../constants/tempData";
+import TodoList from "@/components/TodoList";
+import AddListModal from "@/components/AddListModal";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+const Index: React.FC = () => {
+  const [addTodoVisible, setAddTodoVisible] = useState<boolean>(false);
+  const [lists, setLists] = useState(tempData);
 
-export default function HomeScreen() {
+  const toggleAddTodoModal = () => {
+    setAddTodoVisible(!addTodoVisible);
+  };
+
+  const renderList = ({ item }: { item: any }) => {
+    return <TodoList list={item} updateList={updateList} deleteList={deleteList} />;
+  };
+
+  const addList = (list: { name: string; color: string }) => {
+    setLists([...lists, { ...list, id: lists.length + 1, todos: [] }]);
+  };
+
+  const updateList = (list: any) => {
+    setLists(lists.map((item) => (item.id === list.id ? list : item)));
+  };
+
+  const deleteList = (id: number) => {
+    setLists(lists.filter((item) => item.id !== id));
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+    <View style={styles.container}>
+      <Modal
+        animationType="slide"
+        visible={addTodoVisible}
+        onRequestClose={toggleAddTodoModal}
+      >
+        <AddListModal onClose={toggleAddTodoModal} addList={addList} />
+      </Modal>
+      <View style={styles.row}>
+        <View style={styles.divider} />
+        <Text style={styles.title}>
+          Todo
+          <Text style={{ fontWeight: "300", color: colors.blue }}>Lists</Text>
+        </Text>
+        <View style={styles.divider} />
+      </View>
+
+      <View style={styles.listsContainer}>
+        <FlatList
+          data={lists}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderList}
+          keyboardShouldPersistTaps="always"
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      </View>
+      <View>
+        <TouchableOpacity style={styles.addList} onPress={toggleAddTodoModal}>
+          <MaterialIcons name="add-circle" size={60} color={colors.blue} />
+          <Text style={styles.addListText}>Add List</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    alignContent: "center",
+    justifyContent: "center",
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  row: {
+    flexDirection: "row",
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  divider: {
+    backgroundColor: colors.lightBlue,
+    height: 1,
+    flex: 1,
+    alignSelf: "center",
+  },
+  title: {
+    fontSize: 38,
+    fontWeight: "800",
+    color: colors.black,
+    paddingHorizontal: 30,
+  },
+  addList: {
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingTop: 5,
+  },
+  addListText: {
+    color: colors.blue,
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  listsContainer: {
+    height: "80%",
+    alignItems: "center",
   },
 });
+
+export default Index;
